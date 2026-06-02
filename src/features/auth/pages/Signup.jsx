@@ -1,33 +1,22 @@
 import { useState } from "react";
-
-import { useNavigate }
-from "react-router-dom";
-
-import {
-  signInWithPopup,
-} from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { signInWithPopup } from "firebase/auth";
 
 import {
   auth,
   provider,
 } from "../../../firebase";
 
-import AuthLayout
-from "../../../layouts/AuthLayout";
+import AuthLayout from "../../../layouts/AuthLayout";
 
 import {
   signupUser,
-  verifyOTP,
 } from "../services/authApi";
 
 function Signup() {
 
   const navigate =
     useNavigate();
-
-  const [step,
-    setStep] =
-    useState(1);
 
   const [loading,
     setLoading] =
@@ -43,10 +32,6 @@ function Signup() {
 
     });
 
-  const [otp,
-    setOtp] =
-    useState("");
-
   const handleChange =
     (e) => {
 
@@ -61,42 +46,7 @@ function Signup() {
 
     };
 
-  const handleSendOTP =
-  async (e) => {
-
-    e.preventDefault();
-
-    try {
-
-      setLoading(true);
-
-      const data =
-        await signupUser(
-          formData
-        );
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(
-          data.user
-        )
-      );
-
-      navigate("/");
-
-    } catch (error) {
-
-      console.log(error);
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
-
-  const handleVerifyOTP =
+  const handleSignup =
     async (e) => {
 
       e.preventDefault();
@@ -106,32 +56,18 @@ function Signup() {
         setLoading(true);
 
         const data =
-          await verifyOTP({
-
-            email:
-              formData.email,
-
-            otp,
-
-          });
-
-        localStorage.setItem(
-          "token",
-          data.token
-        );
+          await signupUser(
+            formData
+          );
 
         localStorage.setItem(
           "user",
-
           JSON.stringify(
             data.user
           )
-
         );
 
-        navigate(
-          "/dashboard"
-        );
+        navigate("/");
 
       } catch (error) {
 
@@ -161,9 +97,7 @@ function Signup() {
 
         localStorage.setItem(
           "user",
-
           JSON.stringify(user)
-
         );
 
         navigate(
@@ -188,158 +122,93 @@ function Signup() {
 
           <h2 className="text-4xl font-black text-white tracking-tight">
 
-            {
-              step === 1
-              ? "Create Account"
-              : "Verify OTP"
-            }
+            Create Account
 
           </h2>
 
           <p className="text-slate-400 mt-3 leading-7">
 
-            {
-              step === 1
-
-              ? "Start your AI interview preparation journey."
-
-              : "Enter the OTP sent to your email."
-            }
+            Start your AI interview preparation journey.
 
           </p>
 
         </div>
 
-        {
+        <form
+          onSubmit={handleSignup}
+          className="space-y-4"
+        >
 
-          step === 1
+          <div>
 
-          ? (
+            <label className="text-sm font-medium text-slate-300 block mb-2">
 
-            <form
-              onSubmit={handleSendOTP}
-              className="space-y-4"
-            >
+              Full Name
 
-              <div>
+            </label>
 
-                <label className="text-sm font-medium text-slate-300 block mb-2">
+            <input
+              type="text"
+              name="name"
+              placeholder="Enter full name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
 
-                  Full Name
+          </div>
 
-                </label>
+          <div>
 
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Enter full name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                />
+            <label className="text-sm font-medium text-slate-300 block mb-2">
 
-              </div>
+              Email
 
-              <div>
+            </label>
 
-                <label className="text-sm font-medium text-slate-300 block mb-2">
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
 
-                  Email
+          </div>
 
-                </label>
+          <div>
 
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                />
+            <label className="text-sm font-medium text-slate-300 block mb-2">
 
-              </div>
+              Password
 
-              <div>
+            </label>
 
-                <label className="text-sm font-medium text-slate-300 block mb-2">
+            <input
+              type="password"
+              name="password"
+              placeholder="Create password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
 
-                  Password
+          </div>
 
-                </label>
+          <button
+            className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl py-3.5 font-semibold hover:scale-[1.02] transition-all"
+          >
 
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Create password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                />
+            {
+              loading
+              ? "Creating Account..."
+              : "Create Account"
+            }
 
-              </div>
+          </button>
 
-              <button
-                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl py-3.5 font-semibold hover:scale-[1.02] transition-all"
-              >
-
-                {
-                  loading
-                  ? "Sending OTP..."
-                  : "Send OTP"
-                }
-
-              </button>
-
-            </form>
-
-          )
-
-          : (
-
-            <form
-              onSubmit={handleVerifyOTP}
-              className="space-y-4"
-            >
-
-              <div>
-
-                <label className="text-sm font-medium text-slate-300 block mb-2">
-
-                  OTP
-
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) =>
-                    setOtp(
-                      e.target.value
-                    )
-                  }
-                  className="w-full bg-[#020617] border border-white/10 text-white rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-center tracking-[10px] text-lg font-semibold"
-                />
-
-              </div>
-
-              <button
-                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl py-3.5 font-semibold hover:scale-[1.02] transition-all"
-              >
-
-                {
-                  loading
-                  ? "Verifying..."
-                  : "Verify & Continue"
-                }
-
-              </button>
-
-            </form>
-
-          )
-
-        }
+        </form>
 
         <div className="relative my-6">
 
@@ -379,8 +248,7 @@ function Signup() {
 
         <p className="mt-7 text-center text-sm text-slate-400">
 
-          Already have an account?
-          {" "}
+          Already have an account?{" "}
 
           <span
             onClick={() =>
