@@ -5,22 +5,15 @@ const groq = new Groq({
 });
 
 const analyzeResume = async (resumeText) => {
-
   try {
-
-    const completion =
-      await groq.chat.completions.create({
-
-        messages: [
-          {
-            role: "user",
-            content: `
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `
             You are an ATS Resume Analyzer.
-
             Analyze this resume carefully.
-
             Keep the response concise and short.
-
             Rules:
             - ATS Score only out of 100
             - Maximum 3 strengths
@@ -29,7 +22,6 @@ const analyzeResume = async (resumeText) => {
             - Return ONLY valid JSON
 
             JSON format:
-
             {
               "ATS Score": number,
               "Strengths": [],
@@ -39,37 +31,22 @@ const analyzeResume = async (resumeText) => {
             Resume:
             ${resumeText}
             `,
-          },
-        ],
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+      // FIX: Ye AI ko strictly proper JSON dene pe majboor karega
+      response_format: { type: "json_object" }, 
+    });
 
-        model: "llama-3.3-70b-versatile",
+    const response = completion.choices[0].message.content;
+    console.log("Clean AI Response:", response);
 
-      });
-
-    const response =
-      completion.choices[0].message.content;
-
-    console.log(response);
-
-    const jsonMatch =
-      response.match(/\{[\s\S]*\}/);
-
-    if (!jsonMatch) {
-
-      throw new Error(
-        "Invalid JSON Response"
-      );
-
-    }
-
-    return JSON.parse(jsonMatch[0]);
+    // Direct parse, koi regex ki zarurat nahi ab
+    return JSON.parse(response);
 
   } catch (error) {
-
-    console.log(error);
-
+    console.log("Groq API Error:", error);
     throw new Error("AI Analysis Failed");
-
   }
 };
 
