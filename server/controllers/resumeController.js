@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const Resume =
   require("../models/Resume");
@@ -27,120 +28,67 @@ const {
   "../services/ai/feedbackService"
 );
 
-const uploadResume =
-  async (req, res) => {
+const uploadResume = async (req, res) => {
+  try {
+    // --- FIX: File ko uska original extension wapas dena ---
+    const ext = path.extname(req.file.originalname);
+    const newPath = req.file.path + ext;
+    fs.renameSync(req.file.path, newPath);
+    req.file.path = newPath; // Path update kar diya
+    // --------------------------------------------------------
 
-    try {
+    // Ab tumhara function isko proper PDF manega
+    const resumeText = await extractResumeText(req.file.path);
 
-      const resumeText =
-        await extractResumeText(
-          req.file.path
-        );
+    const existingResume = await Resume.findOne({
+      user: req.user.id,
+      resumeText,
+    });
 
-      const existingResume =
-        await Resume.findOne({
-
-          user:
-            req.user.id,
-
-          resumeText,
-
-        });
-
-      if (existingResume) {
-
-        fs.unlinkSync(
-          req.file.path
-        );
-
-        return res.status(200).json({
-
-          message:
-            "Resume already uploaded",
-
-          duplicate:
-            true,
-
-          resume:
-            existingResume,
-
-          analysis: {
-
-            "ATS Score":
-              existingResume.atsScore,
-
-            Strengths:
-              existingResume.strengths || [],
-
-            Improvements:
-              existingResume.improvements || [],
-
-          },
-
-        });
-
-      }
-
-      const analysis =
-        await analyzeResume(
-          resumeText
-        );
-
-      const resume =
-        await Resume.create({
-
-          user:
-            req.user.id,
-
-          resumeUrl:
-            req.file.path,
-
-          resumeText,
-
-          atsScore:
-            analysis[
-              "ATS Score"
-            ],
-
-          strengths:
-            analysis.Strengths,
-
-          improvements:
-            analysis.Improvements,
-
-        });
-
-      fs.unlinkSync(
-        req.file.path
-      );
-
-      res.status(201).json({
-
-        message:
-          "Resume uploaded",
-
-        duplicate:
-          false,
-
-        resume,
-
-        analysis,
-
+    if (existingResume) {
+      fs.unlinkSync(req.file.path);
+      return res.status(200).json({
+        message: "Resume already uploaded",
+        duplicate: true,
+        resume: existingResume,
+        analysis: {
+          "ATS Score": existingResume.atsScore,
+          Strengths: existingResume.strengths || [],
+          Improvements: existingResume.improvements || [],
+        },
       });
-
-    } catch (error) {
-
-      console.log(error);
-
-      res.status(500).json({
-
-        message:
-          "Server Error",
-
-      });
-
     }
 
+    const analysis = await analyzeResume(resumeText);
+
+    const resume = await Resume.create({
+      user: req.user.id,
+      resumeUrl: req.file.path,
+      resumeText,
+      atsScore: analysis["ATS Score"],
+      strengths: analysis.Strengths,
+      improvements: analysis.Improvements,
+    });
+
+    fs.unlinkSync(req.file.path);
+
+    res.status(201).json({
+      message: "Resume uploaded",
+      duplicate: false,
+      resume,
+      analysis,
+    });
+
+  } catch (error) {
+    console.log(error);
+    // Error aane par bhi file delete karna zaruri hai taaki server full na ho
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+       fs.unlinkSync(req.file.path);
+    }
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
 };
 
 const getMyResumes =
