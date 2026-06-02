@@ -27,7 +27,9 @@ const sendOTPEmail =
     email,
     otp
   ) => {
-
+    console.log("EMAIL_USER:", process.env.EMAIL_USER);
+    await transporter.verify();
+console.log("SMTP Connected");
     await transporter.sendMail({
 
       from:
