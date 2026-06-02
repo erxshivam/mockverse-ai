@@ -3,65 +3,34 @@ const path = require("path");
 const mammoth = require("mammoth");
 
 const extractResumeText = async (filePath) => {
-
   try {
 
     const ext =
       path.extname(filePath)
       .toLowerCase();
 
-    if (ext === ".pdf") {
-
-      const pdfModule =
-        require("pdf-parse");
-
-      const pdf =
-        pdfModule.default ||
-        pdfModule;
-
-      const dataBuffer =
-        fs.readFileSync(
-          filePath
-        );
-
-      const data =
-        await pdf(
-          dataBuffer
-        );
-
-      return data.text;
-
-    }
-
     if (ext === ".docx") {
 
       const result =
-        await mammoth
-          .extractRawText({
-
-            path:
-              filePath,
-
-          });
+        await mammoth.extractRawText({
+          path: filePath,
+        });
 
       return result.value;
-
     }
 
-    if (ext === ".txt") {
+    if (ext === ".pdf") {
 
       return fs.readFileSync(
-
         filePath,
-
-        "utf8"
-
+        "latin1"
       );
 
     }
 
-    throw new Error(
-      "Unsupported file format"
+    return fs.readFileSync(
+      filePath,
+      "utf8"
     );
 
   } catch (error) {
@@ -73,7 +42,6 @@ const extractResumeText = async (filePath) => {
     );
 
   }
-
 };
 
 module.exports =
