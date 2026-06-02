@@ -81,16 +81,17 @@ const signupUser =
           otp,
 
           otpExpiry,
+           isVerified: true,
 
         });
 
-      await sendOTPEmail(
+      // await sendOTPEmail(
 
-        email,
+      //   email,
 
-        otp
+      //   otp
 
-      );
+      // );
 
       user.password =
         undefined;

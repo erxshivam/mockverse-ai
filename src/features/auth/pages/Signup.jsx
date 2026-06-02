@@ -62,32 +62,39 @@ function Signup() {
     };
 
   const handleSendOTP =
-    async (e) => {
+  async (e) => {
 
-      e.preventDefault();
+    e.preventDefault();
 
-      try {
+    try {
 
-        setLoading(true);
+      setLoading(true);
 
-        const data =
-          await signupUser(
-            formData
-          );
+      const data =
+        await signupUser(
+          formData
+        );
 
-        setStep(2);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(
+          data.user
+        )
+      );
 
-      } catch (error) {
+      navigate("/");
 
-        console.log(error);
+    } catch (error) {
 
-      } finally {
+      console.log(error);
 
-        setLoading(false);
+    } finally {
 
-      }
+      setLoading(false);
 
-    };
+    }
+
+  };
 
   const handleVerifyOTP =
     async (e) => {
