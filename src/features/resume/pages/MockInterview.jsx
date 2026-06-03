@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 
 import {
   Brain,
@@ -18,12 +19,13 @@ import {
 } from "../services/resumeApi";
 
 function MockInterview() {
+  const { id } = useParams();
 
   const [resumeFile, setResumeFile] =
     useState(null);
 
   const [resumeId, setResumeId] =
-    useState("");
+  useState(id || "");
 
   const [questions, setQuestions] =
     useState([]);
@@ -59,7 +61,7 @@ function MockInterview() {
     useState(false);
 
   const [uploadSuccess, setUploadSuccess] =
-    useState(false);
+  useState(!!id);
 
   const handleUploadResume =
     async () => {
