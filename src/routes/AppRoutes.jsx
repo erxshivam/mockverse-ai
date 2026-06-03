@@ -101,6 +101,10 @@ function AppRoutes() {
           path="/mock-interview"
           element={<MockInterview />}
         />
+        <Route
+  path="/mock-interview/:id"
+  element={<MockInterview />}
+/>
 
         <Route
           path="/voice-interview"
